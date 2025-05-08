@@ -9,10 +9,15 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
-import javax.inject.Inject;
+import com.google.inject.Inject;
 import land.pvp.swingfix.util.PluginMessageUtil;
 
-@Plugin(id = "velocityswingfix", name = "VelocitySwingFix", version = "1.0.0-SNAPSHOT", authors = {"PvP Land Development"})
+@Plugin(
+    id = "velocityswingfix",
+    name = "VelocitySwingFix",
+    version = "1.0.0-SNAPSHOT",
+    authors = {"PvP Land Development & oipika"}
+)
 public class VelocitySwingFix {
     private final ProxyServer server;
 
@@ -23,34 +28,64 @@ public class VelocitySwingFix {
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
-        this.server.getChannelRegistrar().register(MinecraftChannelIdentifier.from(PluginMessageUtil.LUNAR_CHANNEL));
-        this.server.getChannelRegistrar().register(MinecraftChannelIdentifier.from(PluginMessageUtil.LUNAR_APOLLO_CHANNEL));
-        this.server.getChannelRegistrar().register(MinecraftChannelIdentifier.from(PluginMessageUtil.ANIMATIUM_CHANNEL));
-        this.server.getChannelRegistrar().register(MinecraftChannelIdentifier.from(PluginMessageUtil.BLC_CHANNEL));
+        this.server.getChannelRegistrar().register(
+            MinecraftChannelIdentifier.from(PluginMessageUtil.LUNAR_CHANNEL)
+        );
+        this.server.getChannelRegistrar().register(
+            MinecraftChannelIdentifier.from(PluginMessageUtil.LUNAR_APOLLO_CHANNEL)
+        );
+        this.server.getChannelRegistrar().register(
+            MinecraftChannelIdentifier.from(PluginMessageUtil.ANIMATIUM_CHANNEL)
+        );
+        this.server.getChannelRegistrar().register(
+            MinecraftChannelIdentifier.from(PluginMessageUtil.BLC_CHANNEL)
+        );
     }
 
     @Subscribe
     public void onServerConnect(ServerConnectedEvent event) {
-        // Lunar has to be delayed otherwise its server rule settings are reset by the vanilla server's REGISTER payload.
-        this.server.getScheduler().buildTask(this, () -> {
-            Player player = event.getPlayer();
-            if (player == null) {
-                return;
-            }
+        // Lunar has to be delayed otherwise its server rule settings
+        // are reset by the vanilla server's REGISTER payload.
+        this.server.getScheduler()
+            .buildTask(this, () -> {
+                Player player = event.getPlayer();
+                if (player == null) {
+                    return;
+                }
 
-            String registerChannel = player.getProtocolVersion().getProtocol() > 340 ? "minecraft:register" : "REGISTER";
+                String registerChannel =
+                    player.getProtocolVersion().getProtocol() > 340
+                        ? "minecraft:register"
+                        : "REGISTER";
 
-            // Lunar SwingFix
-            player.sendPluginMessage(() -> registerChannel, PluginMessageUtil.LUNAR_CHANNEL.getBytes(StandardCharsets.UTF_8));
-            player.sendPluginMessage(() -> PluginMessageUtil.LUNAR_CHANNEL, PluginMessageUtil.LUNAR_PACKET_BYTES);
-            // Lunar (Apollo) SwingFix
-            player.sendPluginMessage(() -> PluginMessageUtil.LUNAR_APOLLO_CHANNEL, PluginMessageUtil.APOLLO_PACKET_BYTES);
-            // BLC SwingFix
-            player.sendPluginMessage(() -> PluginMessageUtil.BLC_CHANNEL, PluginMessageUtil.BLC_PACKET_BYTES);
-            // Animatium
-            if (player.getProtocolVersion().getProtocol() > 768) {
-                player.sendPluginMessage(() -> PluginMessageUtil.ANIMATIUM_CHANNEL, PluginMessageUtil.ANIMATIUM_PACKET_BYTES);
-            }
-        }).delay(1, TimeUnit.SECONDS).schedule();
+                // Lunar SwingFix
+                player.sendPluginMessage(
+                    () -> registerChannel,
+                    PluginMessageUtil.LUNAR_CHANNEL.getBytes(StandardCharsets.UTF_8)
+                );
+                player.sendPluginMessage(
+                    () -> PluginMessageUtil.LUNAR_CHANNEL,
+                    PluginMessageUtil.LUNAR_PACKET_BYTES
+                );
+                // Lunar (Apollo) SwingFix
+                player.sendPluginMessage(
+                    () -> PluginMessageUtil.LUNAR_APOLLO_CHANNEL,
+                    PluginMessageUtil.APOLLO_PACKET_BYTES
+                );
+                // BLC SwingFix
+                player.sendPluginMessage(
+                    () -> PluginMessageUtil.BLC_CHANNEL,
+                    PluginMessageUtil.BLC_PACKET_BYTES
+                );
+                // Animatium
+                if (player.getProtocolVersion().getProtocol() > 768) {
+                    player.sendPluginMessage(
+                        () -> PluginMessageUtil.ANIMATIUM_CHANNEL,
+                        PluginMessageUtil.ANIMATIUM_PACKET_BYTES
+                    );
+                }
+            })
+            .delay(1, TimeUnit.SECONDS)
+            .schedule();
     }
 }
